@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
-import { TcpMicroModule } from './../src/tcp-micro/tcp-micro.module';
 import { tcpMicroConfig } from './../src/ microservice.provider';
 
 describe('AppController (e2e)', () => {
@@ -14,18 +13,13 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-
-    const tcpMicroModuleFixture: TestingModule = await Test.createTestingModule(
-      {
-        imports: [TcpMicroModule],
-      },
-    ).compile();
-
-    const tcpMicro =
-      tcpMicroModuleFixture.createNestMicroservice(tcpMicroConfig);
-
-    await tcpMicro.init();
+    app.connectMicroservice(tcpMicroConfig);
+    await app.startAllMicroservicesAsync();
     await app.init();
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 
   it('/ (GET)', () => {
